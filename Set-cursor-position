@@ -1,5 +1,5 @@
 ASSEMBLY X86-64
-Util routinesin assembly – Nasm Linux
+Util routines in assembly x86-64 – using Nasm for a Linux system
 
 Set the cursor position at terminal.
 Linux has not bios interrupt that manage the terminal like windows. To get the
