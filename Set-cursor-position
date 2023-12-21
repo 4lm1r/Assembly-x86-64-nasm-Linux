@@ -1,0 +1,53 @@
+ASSEMBLY X86-64
+Util routinesin assembly – Nasm Linux
+
+Set the cursor position at terminal.
+Linux has not bios interrupt that manage the terminal like windows. To get the
+same effect in a console terminal on linux you can use a escape sequence.
+;-----------------------------------------------------------
+;    Routine to set cursor position in terminal
+;    using escape sequence
+;-----------------------------------------------------------
+section .data
+setcur db 0x1b, 0x5b, 0x0, 0x0, 0x3b, 0x0, 0x0, 0x48    ;  escape seq “ESC[00;00H”
+len equ	 $ - setcur                                     ;  size of string var poscur
+
+section .text
+global _poscur
+;------------------------------------------------------------------------------------
+;    The routine expects the parameters x and y through registers
+;    ah, al  digits x ( in characters ex: 05  → ah= 0x30  al = 0x35) the utf-8 code
+;    ch, cl digits y ( in characters ex: 20 → ch = 0x32 al = 0x30)   for the digits
+;------------------------------------------------------------------------------------
+_poscur:
+	push	rbp
+	mov	rbp, rsp
+	sub	rsp, 16
+	mov	rbx, setcur
+	mov	byte[rbx+2], ah           ; character 1 digit coord x
+	mov	byte[rbx+3], al	          ; character  2 digit coord x
+	mov	byte[rbx+5], ch	          ; character  1 digit coord y
+	mov	byte[rbx+6], cl	          ; character  2 digit coord y
+	mov	rsi, rbx
+	mov	rdx, len
+	call	_print                  ; routine to print the escape sequence
+	add	rsp, 16
+	pop	rbp
+	ret
+	
+
+write equ 1         ; syscall code for write
+stdout equ 1        ; syscall code for standard output
+;------------------------------------------------------------------------------------
+; Routine _print prints a string allocated at address in rsi
+; rdx holds the string size
+;------------------------------------------------------------------------------------
+_print:
+	push	rdi
+	push	rax
+	mov	rdi, stdout
+	mov	rax, write
+	syscall
+	pop	rax
+	pop	rdi
+	ret
